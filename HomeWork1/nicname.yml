@@ -1,0 +1,19 @@
+---
+- name: Disable consistent network device naming
+  hosts: all
+  user: ansible
+
+  tasks:
+  - name: changing grub
+    lineinfile: 
+      path: /etc/default/grub 
+      regexp: '^(GRUB_CMDLINE_LINUX=".*)"$'
+      backrefs: yes
+      line: '\1 {{ item }}"'
+    with_items:
+      - "net.ifnames=0"
+      - "biosdevname=0"
+   
+  - name: Grub Make config
+    shell: grub2-mkconfig   
+...

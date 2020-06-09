@@ -1,0 +1,40 @@
+---
+- name: Installing and configuring Appache
+  hosts: all
+  user: ansible
+  vars_files:
+    - vars/html.yml
+
+  tasks:
+  - name: installing Apache and Firewall
+    yum: 
+      name: 
+        - httpd
+        - firewalld
+      state: latest
+
+  - name: service Apache and Firewall starting and enabling
+    service: name="{{ item }}" state=started enabled=yes
+    with_items:
+      - httpd
+      - firewalld
+
+  - name: creating index.html and restart server if it was changed
+    copy: 
+      content: "{{ html_text }}" 
+      dest: "{{ html_dest }}" 
+      mode: '0500'
+      owner: apache
+      group: apache
+    notify: Restart Apache
+
+  - name: Applying firewall rules
+    firewalld: service="{{ item }}" permanent=yes immediate=yes state=enabled
+    with_items:
+      - http
+      - https
+
+  handlers:
+  - name: Restart Apache
+    service: name=httpd state=restarted
+...
