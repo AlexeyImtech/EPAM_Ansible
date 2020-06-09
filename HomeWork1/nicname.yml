@@ -13,7 +13,9 @@
     with_items:
       - "net.ifnames=0"
       - "biosdevname=0"
-   
+    notify: Grub Make config
+
+  handlers:
   - name: Grub Make config
     shell: grub2-mkconfig   
 ...
