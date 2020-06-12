@@ -1,0 +1,16 @@
+template_name: vsftpd_conf
+public_dir: pub
+
+
+# Config variables
+
+anonymous_enable: "YES"
+write_enable: "YES"
+anon_upload_enable: "YES"
+anon_mkdir_write_enable: "YES"
+anon_root: "/var/ftp"
+chown_uploads: "YES"
+chown_username: "ftp"
+chown_upload_mode: "0600"
+no_anon_password: "YES"
+anon_umask: "022"

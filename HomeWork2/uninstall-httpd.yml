@@ -1,0 +1,20 @@
+---
+- name: Unnstalling httpd
+  hosts: all
+  user: ansible
+  vars_files:
+    - vars/html.yml
+
+  tasks:
+  - name: Uninstalling httpd
+    yum: name=httpd state=absent
+
+  - name: index.html deletion
+    file: path="{{ html_dest }}" state=absent
+
+  - name: Modifying firewall rules
+    firewalld: service="{{ item }}" permanent=yes immediate=yes state=disabled
+    with_items:
+      - http
+      - https
+...

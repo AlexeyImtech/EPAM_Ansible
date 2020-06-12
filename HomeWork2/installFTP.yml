@@ -1,0 +1,61 @@
+---
+- name: Installing and configuring FTP server
+  hosts: all
+  user: ansible
+  vars_files:
+    - vars/FTP.yml
+
+  tasks:
+  - name: installing FTP, Firewall and python libraries for SElinux
+    yum: 
+      name: 
+        - vsftpd
+        - firewalld
+        - libselinux-python
+        - libsemanage-python
+        - policycoreutils-python
+      state: latest
+
+  - name: FTP server and Firewall starting and enabling
+    service: name="{{ item }}" state=started enabled=yes
+    with_items:
+      - vsftpd
+      - firewalld
+
+  - name: creating vsftpd.conf and restart server if it was changed
+    template: 
+      src: templates/{{ template_name }}.j2 
+      dest: /etc/vsftpd/vsftpd.conf
+      mode: '0600'
+      owner: root
+      group: root
+    notify: Restart FTP
+
+  - name: Applying firewall rules
+    firewalld: service=ftp permanent=yes immediate=yes state=enabled
+
+  - name: Set SELinux boolean
+    seboolean: name="allow_ftpd_anon_write" persistent="yes" state="yes"
+
+  - name: Change Public Folder Owner and Mode
+    file: path="{{ anon_root }}/{{ public_dir }}" owner="{{ chown_username }}" group=root mode=0775 state=directory
+
+  - name: Set SELinux context for anon root dir
+    sefcontext: target="{{ anon_root }}" setype=public_content_t state=present
+    notify: Apply label change
+
+  - name: Set SELinux context for public dir
+    sefcontext: target="{{ anon_root }}/{{ public_dir }}(/.*)?" setype=public_content_rw_t state=present
+    notify: Apply label change 
+
+
+  handlers:
+  - name: Restart FTP
+    service: name=vsftpd state=restarted
+  
+  - name: Apply label change
+    command: restorecon -R -v {{ item }}
+    with_items:
+     - "{{ anon_root }}"
+     - "{{ anon_root }}/{{ public_dir }}"
+...
