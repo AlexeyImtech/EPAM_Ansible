@@ -1,0 +1,7 @@
+<VirtualHost *:80>
+
+    ServerName {{ ansible_fqdn }}
+    DocumentRoot /var/www/{{ ansible_fqdn }}/public_html
+    ErrorLog /var/log/httpd/{{ ansible_fqdn }}_error.log
+    CustomLog /var/log/httpd/{{ ansible_fqdn }}_requests.log combined
+</VirtualHost>

@@ -1,0 +1,8 @@
+---
+- name: Disable consistent network device naming
+  hosts: ungrouped
+  user: ansible
+
+  roles:
+    - vhost
+...

@@ -1,0 +1,58 @@
+---
+# tasks file for vhost
+- name: Creating site home directory
+  file:
+    path: /var/www/{{ ansible_fqdn }}/public_html
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- stat:
+    path: /var/www/{{ ansible_fqdn }}/public_html/index.html
+  register: p
+
+- template:
+    src: index.j2
+    dest: /var/www/{{ ansible_fqdn }}/public_html/index.html
+    owner: root
+    group: root
+    mode: '0644'
+  when: p.stat.exists != True
+  notify: Restart Apache
+
+- name: Creating config directories
+  file:
+    path: /etc/httpd/{{ item }}
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+  - sites-available
+  - sites-enabled
+
+- name: Editing server configuration file
+  lineinfile: 
+      path: /etc/httpd/conf/httpd.conf
+      regexp: 'IncludeOptional sites-enabled/\*\.conf'
+      state: present
+      line: 'IncludeOptional sites-enabled/*.conf'
+  notify: Restart Apache
+
+- template:
+    src: vhost.conf.j2
+    dest: /etc/httpd/sites-available/{{ ansible_fqdn }}.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Apache 
+
+- file:
+    src: /etc/httpd/sites-available/{{ ansible_fqdn }}.conf
+    dest: /etc/httpd/sites-enabled/{{ ansible_fqdn }}.conf
+    owner: root
+    group: root
+    mode: '0644'
+    state: link
+  notify: Restart Apache
