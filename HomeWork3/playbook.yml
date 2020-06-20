@@ -1,6 +1,6 @@
 ---
 - name: Disable consistent network device naming
-  hosts: ungrouped
+  hosts: lamp
   user: ansible
 
   roles:
